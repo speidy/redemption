@@ -625,7 +625,6 @@ unit-test test_ntlm_context : tests/core/RDP/nla/ntlm/test_ntlm_context.cpp open
 unit-test test_ntlm : tests/core/RDP/nla/ntlm/test_ntlm.cpp openssl crypto dl z libboost_unit_test : <variant>coverage:<library>gcov ;
 unit-test test_credentials : tests/core/RDP/nla/kerberos/test_credentials.cpp krb5 libboost_unit_test : <variant>coverage:<library>gcov ;
 unit-test test_kerberos : tests/core/RDP/nla/kerberos/test_kerberos.cpp krb5 gssglue libboost_unit_test : <variant>coverage:<library>gcov ;
-## @}
 
 
 unit-test test_darray : tests/utils/test_darray.cpp libboost_unit_test : <variant>coverage:<library>gcov ;
