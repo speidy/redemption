@@ -556,8 +556,6 @@ unit-test test_flat_interactive_password : tests/mod/internal/widget2/test_flat_
 unit-test test_widget : tests/mod/internal/widget2/test_widget.cpp libboost_unit_test : <variant>coverage:<library>gcov ;
 unit-test test_composite : tests/mod/internal/widget2/test_composite.cpp cryptofile png z openssl crypto dl snappy libboost_unit_test : <variant>coverage:<library>gcov ;
 
-#unit-test test_window_dialog : tests/mod/internal/widget2/test_window_dialog.cpp png z openssl crypto dl libboost_unit_test : <variant>coverage:<library>gcov ;
-
 unit-test test_flat_login : tests/mod/internal/widget2/test_flat_login.cpp cryptofile png z openssl crypto dl snappy libboost_unit_test : <variant>coverage:<library>gcov ;
 unit-test test_flat_wab_close : tests/mod/internal/widget2/test_flat_wab_close.cpp cryptofile png z openssl crypto dl snappy libboost_unit_test : <variant>coverage:<library>gcov ;
 unit-test test_flat_selector : tests/mod/internal/widget2/test_flat_selector.cpp cryptofile png z openssl crypto dl snappy libboost_unit_test : <variant>coverage:<library>gcov ;
