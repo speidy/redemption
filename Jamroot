@@ -155,7 +155,6 @@ alias instexe : install-bin ;
 alias install : install-bin install-etc install-etc-themes install-share ;
 alias exe     : rdpproxy redrec ;
 
-#alias test_suite_widget2 : test_widget2_rect test_image test_label test_tooltip test_edit test_multiline test_password test_number_edit test_widget test_composite test_window_dialog test_window_login test_window_wab_close test_widget2_window test_wab_close test_selector test_screen ;
 
 
 install install-bin
@@ -540,6 +539,7 @@ unit-test test_keymapSym : tests/test_keymapSym.cpp libboost_unit_test : <varian
 
 ## Widget tests
 ## @{
+#alias test_suite_widget2 : test_widget2_rect test_image test_label test_tooltip test_edit test_multiline test_password test_number_edit test_widget test_composite test_window_dialog test_window_login test_window_wab_close test_widget2_window test_wab_close test_selector test_screen ;
 unit-test test_widget2_rect : tests/mod/internal/widget2/test_widget2_rect.cpp cryptofile png z openssl crypto dl snappy libboost_unit_test : <variant>coverage:<library>gcov ;
 unit-test test_image : tests/mod/internal/widget2/test_image.cpp cryptofile png z openssl crypto dl snappy libboost_unit_test : <variant>coverage:<library>gcov ;
 unit-test test_label : tests/mod/internal/widget2/test_label.cpp cryptofile png z openssl crypto dl snappy libboost_unit_test : <variant>coverage:<library>gcov ;
