@@ -499,7 +499,8 @@ protected:
     }
 
     inline static size_t size() {
-        return 6;   // OrderSize(2) + FieldsPresentFlags(2) + WindowId(2)
+    	//TODO: it was 6 before @speidy change
+        return 10;   // OrderSize(2) + FieldsPresentFlags(4) + WindowId(4)
     }
 
     inline size_t str(char * buffer, size_t size) const {
@@ -1742,6 +1743,50 @@ public:
     }
 };  // CachedIcon
 
+
+
+/********************************************************************************/
+/* WindowIds Structure		 													*/
+/********************************************************************************/
+
+class WindowId {
+    uint32_t window_id = 0;
+
+public:
+    inline void emit(Stream & stream) const {
+        stream.out_uint32_le(this->window_id);
+    }
+
+    inline void receive(Stream & stream) {
+        {
+            const unsigned expected = 4;  // window_id(4)
+
+			if (!stream.in_check_rem(expected)) {
+				LOG(LOG_ERR, "Truncated WindowIds: expected=%u remains=%u",
+						expected, stream.in_remain());
+				throw Error(ERR_RAIL_PDU_TRUNCATED);
+			}
+        }
+
+        this->window_id = stream.in_uint32_le();
+    }
+
+    inline static size_t size() {
+        return 4; // window_id(4)
+    }
+
+    inline size_t str(char * buffer, size_t size) const {
+		size_t length = 0;
+
+		const size_t result = ::snprintf(buffer + length, size - length,
+				"(window_id=%u)", this->window_id);
+		length += ((result < (size - length)) ? result : ((size - length) - 1));
+
+		return length;
+    }
+};
+
+
 // [MS-RDPERP] - 2.2.1.3.3.1 Common Header (TS_DESKTOP_ORDER_HEADER)
 // =================================================================
 
@@ -1768,6 +1813,333 @@ public:
 // FieldsPresentFlags (4 bytes): An unsigned 32-bit integer. The flags
 //  indicating which fields are present in the packet. See Actively Monitored
 //  Desktop for values and use.
+
+class DesktopInformationCommonHeader {
+    mutable uint16_t OrderSize           = 0;
+            uint32_t FieldsPresentFlags_ = 0;
+//            uint32_t WindowId            = 0;
+
+    mutable uint32_t   offset_of_OrderSize = 0;
+    mutable Stream   * output_stream       = nullptr;
+
+protected:
+    //inline void AddFieldsPresentFlags(uint32_t FieldsPresentFlagsToAdd) {
+    //    this->FieldsPresentFlags_ |= FieldsPresentFlagsToAdd;
+    //}
+
+    //inline void RemoveFieldsPresentFlags(uint32_t FieldsPresentFlagsToRemove) {
+    //    this->FieldsPresentFlags_ &= ~FieldsPresentFlagsToRemove;
+    //}
+
+    inline void emit_begin(Stream & stream) const {
+        REDASSERT(this->output_stream == nullptr);
+
+        this->output_stream = &stream;
+
+        this->offset_of_OrderSize = stream.get_offset();
+        stream.out_skip_bytes(2); // OrderSize(2)
+
+        stream.out_uint32_le(this->FieldsPresentFlags_);
+//        stream.out_uint32_le(this->WindowId);
+
+        stream.mark_end();
+    }
+
+    inline void emit_end() const {
+        REDASSERT(this->output_stream != nullptr);
+
+        this->output_stream->set_out_uint16_le(
+            this->output_stream->get_offset() - this->offset_of_OrderSize,
+            this->offset_of_OrderSize);
+    }
+
+    inline void receive(Stream & stream) {
+        {
+            const unsigned expected =
+                6;  // OrderSize(2) + FieldsPresentFlags(4)
+
+            if (!stream.in_check_rem(expected)) {
+                LOG(LOG_ERR,
+                    "Truncated Desktop Information Common Header: "
+                        "expected=%u remains=%u",
+                    expected, stream.in_remain());
+                throw Error(ERR_RAIL_PDU_TRUNCATED);
+            }
+        }
+
+        this->OrderSize           = stream.in_uint16_le();
+        this->FieldsPresentFlags_ = stream.in_uint32_le();
+//        this->WindowId            = stream.in_uint32_le();
+    }
+
+    inline static size_t size() {
+        return 6;   // OrderSize(2) + FieldsPresentFlags(4)
+    }
+
+    inline size_t str(char * buffer, size_t size) const {
+        const size_t length =
+            ::snprintf(buffer, size,
+                       "(OrderSize=%u FieldsPresentFlags=0x%08X)",
+                       this->OrderSize, this->FieldsPresentFlags_);
+        return ((length < size) ? length : size - 1);
+    }
+
+public:
+    inline uint32_t FieldsPresentFlags() const { return this->FieldsPresentFlags_; }
+};  // DesktopInformationCommonHeader
+
+
+/********************************************************************************/
+/* Activley Monitored Desktop 													*/
+/********************************************************************************/
+
+/*
+   Hdr (7 bytes): Seven bytes. A TS_DESKTOP_ORDER_HEADER header. The FieldsPresentFlags field
+   of the header MUST be constructed using the following values.
+
+        Value                                                                 Meaning
+
+        0x04000000                                                            Indicates an order specifying a desktop. This flag
+        WINDOW_ORDER_TYPE_DESKTOP                                             MUST be set.
+
+        0x00000002                                                            Indicates that the server will be sending
+        WINDOW_ORDER_FIELD_DESKTOP_HOOKED                                     information for the server's current input desktop.
+
+        0x00000008                                                            Indicates that the server is beginning to
+        WINDOW_ORDER_FIELD_DESKTOP_ARC_BEGAN                                  synchronize information with the client after the
+                                                                              client has auto-reconnected or the server has just
+                                                                              begun monitoring a new desktop. If this flag is set,
+                                                                              the WINDOW_ORDER_FIELD_DESKTOP_HOOKED
+                                                                              flag MUST also be set.
+
+        0x00000004                                                            Indicates that the server has finished
+        WINDOW_ORDER_FIELD_DESKTOP_ARC_COMPLETED                              synchronizing data after the client has auto-
+                                                                              reconnected or the server has just begun
+                                                                              monitoring a new desktop. The client SHOULD
+                                                                              assume that any window or shell notification icon
+                                                                              not received during the synchronization is
+                                                                              discarded. This flag MUST only be combined with
+                                                                              the WINDOW_ORDER_TYPE_DESKTOP flag.
+
+        0x00000020                                                            Indicates that the ActiveWindowId field is
+        WINDOW_ORDER_FIELD_DESKTOP_ACTIVEWND                                  present.
+
+        0x00000010                                                            Indicates that the NumWindowIds field is
+        WINDOW_ORDER_FIELD_DESKTOP_ZORDER                                     present. If the NumWindowIds field has a value
+                                                                              greater than 0, the WindowIds field MUST also
+                                                                              be present.
+ */
+
+enum
+{
+	WINDOW_ORDER_TYPE_DESKTOP 					= 0x04000000,
+	WINDOW_ORDER_FIELD_DESKTOP_HOOKED			= 0x00000002,
+	WINDOW_ORDER_FIELD_DESKTOP_ARC_BEGAN 		= 0x00000008,
+	WINDOW_ORDER_FIELD_DESKTOP_ARC_COMPLETED	= 0x00000004,
+	WINDOW_ORDER_FIELD_DESKTOP_ACTIVEWND		= 0x00000020,
+	WINDOW_ORDER_FIELD_DESKTOP_ZORDER			= 0x00000010
+};
+
+class ActivelyMonitoredDesktop : public DesktopInformationCommonHeader {
+    uint32_t ActiveWindowId = 0;
+    uint8_t  NumWindowIds   = 0;
+
+    std::vector<WindowId> window_ids;
+
+public:
+    void emit(Stream & stream) const {
+        DesktopInformationCommonHeader::emit_begin(stream);
+
+        if (this->FieldsPresentFlags() & WINDOW_ORDER_FIELD_DESKTOP_ACTIVEWND) {
+            stream.out_uint32_le(this->ActiveWindowId);
+        }
+
+        if (this->FieldsPresentFlags() & WINDOW_ORDER_FIELD_DESKTOP_ZORDER) {
+            stream.out_uint8(this->NumWindowIds);
+
+            for (WindowId wi : this->window_ids) {
+                wi.emit(stream);
+            }
+        }
+
+        stream.mark_end();
+
+        DesktopInformationCommonHeader::emit_end();
+    }   // emit
+
+    void receive(Stream & stream) {
+    	DesktopInformationCommonHeader::receive(stream);
+
+        if (this->FieldsPresentFlags() & WINDOW_ORDER_FIELD_DESKTOP_ACTIVEWND) {
+            {
+                const unsigned expected = 4;  // ActiveWindowId(4)
+
+                if (!stream.in_check_rem(expected)) {
+                    LOG(LOG_ERR,
+                        "Truncated ActivelyMonitoredDesktop (0): expected=%u remains=%u",
+                        expected, stream.in_remain());
+                    throw Error(ERR_RAIL_PDU_TRUNCATED);
+                }
+            }
+
+            this->ActiveWindowId = stream.in_uint32_le();
+        }
+
+
+        if (this->FieldsPresentFlags() & WINDOW_ORDER_FIELD_DESKTOP_ZORDER) {
+            {
+                const unsigned expected = 1;  // NumWindowIds(1)
+
+                if (!stream.in_check_rem(expected)) {
+                    LOG(LOG_ERR,
+                        "Truncated ActivelyMonitoredDesktop (2): expected=%u remains=%u",
+                        expected, stream.in_remain());
+                    throw Error(ERR_RAIL_PDU_TRUNCATED);
+                }
+            }
+
+            this->NumWindowIds = stream.in_uint8();
+
+            for (uint16_t i = 0; i < this->NumWindowIds; ++i) {
+                WindowId wi;
+                wi.receive(stream);
+
+                this->window_ids.push_back(wi);
+            }
+        }
+    }   // receive
+
+    size_t size() const {
+        size_t count = 0;
+
+        count += DesktopInformationCommonHeader::size();
+
+        if (this->FieldsPresentFlags() & WINDOW_ORDER_FIELD_DESKTOP_ACTIVEWND) {
+            count += 4; // ActiveWindowId(4)
+        }
+
+        if (this->FieldsPresentFlags() & WINDOW_ORDER_FIELD_DESKTOP_ZORDER) {
+            count += 1; // NumWindowIds(1)
+            count += this->NumWindowIds * WindowId::size();
+        }
+
+        return count;
+    }
+
+private:
+    size_t str(char * buffer, size_t size) const {
+        size_t length = 0;
+
+        size_t result = ::snprintf(buffer + length, size - length, "ActivelyMonitoredDesktop ");
+        length += ((result < size - length) ? result : (size - length - 1));
+
+        length += DesktopInformationCommonHeader::str(buffer + length, size - length);
+
+        result = ::snprintf(buffer + length, size - length, ":");
+        length += ((result < size - length) ? result : (size - length - 1));
+
+        if (this->FieldsPresentFlags() & WINDOW_ORDER_FIELD_DESKTOP_ACTIVEWND) {
+            result = ::snprintf(buffer + length, size - length, " ActiveWindowId=0x%08X",
+                this->ActiveWindowId);
+            length += ((result < size - length) ? result : (size - length - 1));
+        }
+
+        if (this->FieldsPresentFlags() & WINDOW_ORDER_FIELD_DESKTOP_ZORDER) {
+            result = ::snprintf(buffer + length, size - length, " NumWindowIds=%u",
+                this->NumWindowIds);
+            length += ((result < size - length) ? result : (size - length - 1));
+
+            result = ::snprintf(buffer + length, size - length, " WindowIds=(");
+            length += ((result < size - length) ? result : (size - length - 1));
+
+            for (WindowId wi : this->window_ids) {
+                length += wi.str(buffer + length, size - length);
+            }
+
+            result = ::snprintf(buffer + length, size - length, ")");
+            length += ((result < size - length) ? result : (size - length - 1));
+        }
+
+        return length;
+    }   // str
+
+public:
+    inline void log(int level) const {
+        char buffer[2048];
+        this->str(buffer, sizeof(buffer));
+        buffer[sizeof(buffer) - 1] = 0;
+        LOG(level, buffer);
+    }
+};  // ActivelyMonitoredDesktop
+
+/********************************************************************************/
+
+
+/********************************************************************************/
+/* Non-Monitored Desktop														*/
+/********************************************************************************/
+
+/*
+   Hdr (7 bytes): Seven bytes. A TS_DESKTOP_ORDER_HEADER header. The FieldsPresentFlags field
+   of the header MUST be constructed using the following values.
+
+        Value                                                Meaning
+
+        0x04000000                                           Indicates an order specifying a desktop. This flag MUST be set.
+        WINDOW_ORDER_TYPE_DESKTOP
+
+        0x00000001                                           Indicates that the server will not be sending information for the
+        WINDOW_ORDER_FIELD_DESKTOP_NONE                      server's current input desktop. This flag MUST be set.
+
+ */
+
+
+enum
+{
+	WINDOW_ORDER_FIELD_DESKTOP_NONE				= 0x00000001
+};
+
+class NonMonitoredDesktop : public DesktopInformationCommonHeader {
+public:
+    inline void emit(Stream & stream) const {
+    	DesktopInformationCommonHeader::emit_begin(stream);
+
+        stream.mark_end();
+
+        DesktopInformationCommonHeader::emit_end();
+    }   // emit
+
+    inline void receive(Stream & stream) {
+    	DesktopInformationCommonHeader::receive(stream);
+    }   // receive
+
+    inline static size_t size() {
+        return DesktopInformationCommonHeader::size();
+    }
+
+private:
+    inline size_t str(char * buffer, size_t size) const {
+        size_t length = 0;
+
+        size_t result = ::snprintf(buffer + length, size - length, "NonMonitoredDesktop ");
+        length += ((result < size - length) ? result : (size - length - 1));
+
+        length += DesktopInformationCommonHeader::str(buffer + length, size - length);
+
+        return length;
+    }
+
+public:
+    inline void log(int level) const {
+        char buffer[2048];
+        this->str(buffer, sizeof(buffer));
+        buffer[sizeof(buffer) - 1] = 0;
+        LOG(level, buffer);
+    }
+};  // NonMonitoredDesktop
+
+
+/********************************************************************************/
 
 }   // namespace RAIL
 }   // namespace RDP

@@ -684,6 +684,22 @@ public:
         }
     }
 
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop & order) {
+        this->reserve_order(order.size());
+        order.emit(this->stream_orders);
+        if (this->ini.debug.secondary_orders) {
+            order.log(LOG_INFO);
+        }
+    }
+
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop & order) {
+        this->reserve_order(order.size());
+        order.emit(this->stream_orders);
+        if (this->ini.debug.secondary_orders) {
+            order.log(LOG_INFO);
+        }
+    }
+
     // check if the next bitmap will fit in available packet size
     // if not send previous bitmaps we got and init a new packet
     void reserve_bitmap(size_t asked_size) {

@@ -185,6 +185,14 @@ public:
         this->front.draw(order);
     }
 
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop & order) {
+        this->front.draw(order);
+    }
+
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop & order) {
+        this->front.draw(order);
+    }
+
     virtual void server_set_pointer(const Pointer & cursor) {
         this->front.server_set_pointer(cursor);
     }

@@ -149,6 +149,14 @@ struct TestDraw : DrawApi
         this->gd.draw(order);
     }
 
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop  & order) {
+        this->gd.draw(order);
+    }
+
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop		 & order) {
+        this->gd.draw(order);
+    }
+
     virtual void server_set_pointer(const Pointer & cursor) {
         this->gd.server_set_pointer(cursor);
     }

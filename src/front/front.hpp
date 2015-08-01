@@ -4604,6 +4604,24 @@ public:
         }
     }
 
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop & order) {
+        this->orders->draw(order);
+
+        if (  this->capture
+           && (this->capture_state == CAPTURE_STATE_STARTED)) {
+            this->capture->draw(order);
+        }
+    }
+
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop & order) {
+        this->orders->draw(order);
+
+        if (  this->capture
+           && (this->capture_state == CAPTURE_STATE_STARTED)) {
+            this->capture->draw(order);
+        }
+    }
+
     virtual void intersect_order_caps(int idx, uint8_t * proxy_order_caps) const {
         proxy_order_caps[idx] &= this->client_order_caps.orderSupport[idx];
     }

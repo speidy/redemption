@@ -295,6 +295,26 @@ public:
         this->gd.draw(order);
     }
 
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop  & order) {
+        if (this->verbose > 10) {
+            LOG(LOG_INFO, "--------- FRONT ------------------------");
+            order.log(LOG_INFO);
+            LOG(LOG_INFO, "========================================\n");
+        }
+
+        this->gd.draw(order);
+    }
+
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop 		& order) {
+        if (this->verbose > 10) {
+            LOG(LOG_INFO, "--------- FRONT ------------------------");
+            order.log(LOG_INFO);
+            LOG(LOG_INFO, "========================================\n");
+        }
+
+        this->gd.draw(order);
+    }
+
     virtual void draw(const RDPBitmapData & bitmap_data, const uint8_t * data,
         size_t size, const Bitmap & bmp) {
         if (this->verbose > 10) {

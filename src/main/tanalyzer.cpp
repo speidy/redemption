@@ -144,6 +144,9 @@ public:
     virtual void draw(const RDP::RAIL::CachedIcon          & order) { REDASSERT(false); }
     virtual void draw(const RDP::RAIL::DeletedWindow       & order) { REDASSERT(false); }
 
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop  & order) { REDASSERT(false); }
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop       & order) { REDASSERT(false); }
+
     virtual void server_set_pointer(const Pointer & cursor) { REDASSERT(false); }
 
     virtual void flush() { REDASSERT(false); }

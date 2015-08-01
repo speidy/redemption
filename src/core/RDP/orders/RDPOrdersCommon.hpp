@@ -517,7 +517,6 @@ public:
 } /* namespace RDP */
 
 
-
 inline static bool is_1_byte(int16_t value){
     return (value >= -128) && (value <= 127);
 }

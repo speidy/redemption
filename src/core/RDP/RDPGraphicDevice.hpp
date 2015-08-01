@@ -69,6 +69,8 @@ namespace RDP {
         class WindowIcon;
         class CachedIcon;
         class DeletedWindow;
+        class ActivelyMonitoredDesktop;
+        class NonMonitoredDesktop;
     }
 }
 
@@ -101,6 +103,9 @@ struct RDPGraphicDevice : noncopyable {
     virtual void draw(const RDP::RAIL::WindowIcon          & order) = 0;
     virtual void draw(const RDP::RAIL::CachedIcon          & order) = 0;
     virtual void draw(const RDP::RAIL::DeletedWindow       & order) = 0;
+
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop & order) = 0;
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop 		& order) = 0;
 
     virtual void draw( const RDPBitmapData & bitmap_data, const uint8_t * data, std::size_t size
                      , const Bitmap & bmp) = 0;

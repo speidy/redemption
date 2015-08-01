@@ -852,6 +852,9 @@ public:
     virtual void draw(const RDP::RAIL::CachedIcon          & order) {}
     virtual void draw(const RDP::RAIL::DeletedWindow       & order) {}
 
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop  & order) {}
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop       & order) {}
+
     virtual void server_set_pointer(const Pointer & cursor) {
         this->drawable.use_pointer(cursor.x, cursor.y, cursor.data, cursor.mask);
     }

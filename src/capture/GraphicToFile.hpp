@@ -688,6 +688,9 @@ public:
     virtual void draw(const RDP::RAIL::CachedIcon          & order) {}
     virtual void draw(const RDP::RAIL::DeletedWindow       & order) {}
 
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop	& order) {}
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop	    & order) {}
+
 protected:
     virtual void flush_bitmaps() {
         if (this->bitmap_count > 0) {

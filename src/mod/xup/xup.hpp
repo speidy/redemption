@@ -425,6 +425,14 @@ enum {
         this->front.draw(order);
     }
 
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop & order) {
+        this->front.draw(order);
+    }
+
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop 		& order) {
+        this->front.draw(order);
+    }
+
     virtual void draw(const RDPBitmapData & bitmap_data, const uint8_t * data,
         size_t size, const Bitmap & bmp) {
         this->front.draw(bitmap_data, data, size, bmp);

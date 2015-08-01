@@ -6097,6 +6097,14 @@ public:
         this->front.draw(order);
     }
 
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop  & order) {
+        this->front.draw(order);
+    }
+
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop		 & order) {
+        this->front.draw(order);
+    }
+
     virtual bool is_up_and_running() {
         return (UP_AND_RUNNING == this->connection_finalization_state);
     }

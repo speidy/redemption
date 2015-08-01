@@ -228,6 +228,14 @@ public:
         this->recorder.draw(order);
     }
 
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop & order) {
+        this->recorder.draw(order);
+    }
+
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop & order) {
+        this->recorder.draw(order);
+    }
+
     using RDPGraphicDevice::draw;
 
     virtual void server_set_pointer(const Pointer & cursor) {

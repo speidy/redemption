@@ -386,6 +386,14 @@ public:
         this->mod.draw(order);
     }
 
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop  & order) {
+        this->mod.draw(order);
+    }
+
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop		 & order) {
+        this->mod.draw(order);
+    }
+
     virtual void begin_update()
     {
         this->mod.begin_update();

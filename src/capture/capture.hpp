@@ -611,6 +611,18 @@ public:
         }
     }
 
+    virtual void draw(const RDP::RAIL::ActivelyMonitoredDesktop & order) {
+        if (this->gd) {
+            this->gd->draw(order);
+        }
+    }
+
+    virtual void draw(const RDP::RAIL::NonMonitoredDesktop & order) {
+        if (this->gd) {
+            this->gd->draw(order);
+        }
+    }
+
     virtual void server_set_pointer(const Pointer & cursor)
     {
         if (this->gd) {

@@ -311,6 +311,23 @@ private:
             order.log(LOG_INFO);
             gd.draw(order);
         }
+        else if (FieldsPresentFlags & RDP::RAIL::WINDOW_ORDER_TYPE_DESKTOP) {
+		    if (FieldsPresentFlags & (RDP::RAIL::WINDOW_ORDER_FIELD_DESKTOP_HOOKED | RDP::RAIL::WINDOW_ORDER_FIELD_DESKTOP_ARC_BEGAN |
+		    						  RDP::RAIL::WINDOW_ORDER_FIELD_DESKTOP_ARC_COMPLETED | RDP::RAIL::WINDOW_ORDER_FIELD_DESKTOP_ACTIVEWND |
+		    						  RDP::RAIL::WINDOW_ORDER_FIELD_DESKTOP_ZORDER)) {
+				RDP::RAIL::ActivelyMonitoredDesktop order;
+				order.receive(stream);
+				order.log(LOG_INFO);
+				gd.draw(order);
+			}
+			else
+			{
+				RDP::RAIL::NonMonitoredDesktop order;
+				order.receive(stream);
+				order.log(LOG_INFO);
+				gd.draw(order);
+			}
+        }
         else {
             LOG(LOG_INFO,
                 "rdp_orders::process_window_information: "
