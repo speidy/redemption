@@ -446,7 +446,7 @@ class WindowInformationCommonHeader {
             uint32_t WindowId            = 0;
 
     mutable uint32_t   offset_of_OrderSize = 0;
-    mutable uint32_t   offset_of_Hdr = 0;
+    mutable uint32_t   offset_of_Hdr 	   = 0;
     mutable Stream   * output_stream       = nullptr;
 
 protected:
@@ -1813,7 +1813,7 @@ class DesktopInformationCommonHeader {
             uint32_t FieldsPresentFlags_ = 0;
 
     mutable uint32_t   offset_of_OrderSize = 0;
-    mutable uint32_t   offset_of_Hdr = 0;
+    mutable uint32_t   offset_of_Hdr	   = 0;
     mutable Stream   * output_stream       = nullptr;
 
 protected:

@@ -287,29 +287,34 @@ private:
 
         stream.p = savec_stream_p;
 
-        if (FieldsPresentFlags & (RDP::RAIL::WINDOW_ORDER_TYPE_WINDOW | RDP::RAIL::WINDOW_ORDER_STATE_NEW)) {
-            RDP::RAIL::NewOrExistingWindow order;
-            order.receive(stream);
-            order.log(LOG_INFO);
-            gd.draw(order);
-        }
-        else if (FieldsPresentFlags & (RDP::RAIL::WINDOW_ORDER_TYPE_WINDOW | RDP::RAIL::WINDOW_ORDER_STATE_NEW | RDP::RAIL::WINDOW_ORDER_ICON)) {
-            RDP::RAIL::WindowIcon order;
-            order.receive(stream);
-            order.log(LOG_INFO);
-            gd.draw(order);
-        }
-        else if (FieldsPresentFlags & (RDP::RAIL::WINDOW_ORDER_TYPE_WINDOW | RDP::RAIL::WINDOW_ORDER_STATE_NEW | RDP::RAIL::WINDOW_ORDER_CACHEDICON)) {
-            RDP::RAIL::CachedIcon order;
-            order.receive(stream);
-            order.log(LOG_INFO);
-            gd.draw(order);
-        }
-        else if (FieldsPresentFlags & (RDP::RAIL::WINDOW_ORDER_TYPE_WINDOW | RDP::RAIL::WINDOW_ORDER_STATE_DELETED)) {
-            RDP::RAIL::DeletedWindow order;
-            order.receive(stream);
-            order.log(LOG_INFO);
-            gd.draw(order);
+        if (FieldsPresentFlags & RDP::RAIL::WINDOW_ORDER_TYPE_WINDOW) {
+        	if (FieldsPresentFlags & RDP::RAIL::WINDOW_ORDER_STATE_NEW) {
+        		if (FieldsPresentFlags & RDP::RAIL::WINDOW_ORDER_ICON) {
+					RDP::RAIL::WindowIcon order;
+					order.receive(stream);
+					order.log(LOG_INFO);
+					gd.draw(order);
+        		}
+        		else if (FieldsPresentFlags & RDP::RAIL::WINDOW_ORDER_CACHEDICON) {
+					RDP::RAIL::CachedIcon order;
+					order.receive(stream);
+					order.log(LOG_INFO);
+					gd.draw(order);
+				}
+        		else
+        		{
+					RDP::RAIL::NewOrExistingWindow order;
+					order.receive(stream);
+					order.log(LOG_INFO);
+					gd.draw(order);
+				}
+        	}
+        	else if (FieldsPresentFlags & RDP::RAIL::WINDOW_ORDER_STATE_DELETED) {
+				RDP::RAIL::DeletedWindow order;
+				order.receive(stream);
+				order.log(LOG_INFO);
+				gd.draw(order);
+			}
         }
         else if (FieldsPresentFlags & RDP::RAIL::WINDOW_ORDER_TYPE_DESKTOP) {
 		    if (FieldsPresentFlags & (RDP::RAIL::WINDOW_ORDER_FIELD_DESKTOP_HOOKED | RDP::RAIL::WINDOW_ORDER_FIELD_DESKTOP_ARC_BEGAN |
@@ -320,7 +325,7 @@ private:
 				order.log(LOG_INFO);
 				gd.draw(order);
 			}
-			else
+			else if (FieldsPresentFlags & RDP::RAIL::WINDOW_ORDER_FIELD_DESKTOP_NONE)
 			{
 				RDP::RAIL::NonMonitoredDesktop order;
 				order.receive(stream);
