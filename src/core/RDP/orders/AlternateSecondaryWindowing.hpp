@@ -446,21 +446,17 @@ class WindowInformationCommonHeader {
             uint32_t WindowId            = 0;
 
     mutable uint32_t   offset_of_OrderSize = 0;
+    mutable uint32_t   offset_of_Hdr = 0;
     mutable Stream   * output_stream       = nullptr;
 
 protected:
-    //inline void AddFieldsPresentFlags(uint32_t FieldsPresentFlagsToAdd) {
-    //    this->FieldsPresentFlags_ |= FieldsPresentFlagsToAdd;
-    //}
-
-    //inline void RemoveFieldsPresentFlags(uint32_t FieldsPresentFlagsToRemove) {
-    //    this->FieldsPresentFlags_ &= ~FieldsPresentFlagsToRemove;
-    //}
-
     inline void emit_begin(Stream & stream) const {
         REDASSERT(this->output_stream == nullptr);
 
         this->output_stream = &stream;
+
+        this->offset_of_Hdr = stream.get_offset();
+        stream.out_uint8(SECONDARY | (AltsecDrawingOrderHeader::Window << 2)); // Hdr (1)
 
         this->offset_of_OrderSize = stream.get_offset();
         stream.out_skip_bytes(2); // OrderSize(2)
@@ -475,14 +471,13 @@ protected:
         REDASSERT(this->output_stream != nullptr);
 
         this->output_stream->set_out_uint16_le(
-            this->output_stream->get_offset() - this->offset_of_OrderSize,
+            this->output_stream->get_offset() - this->offset_of_Hdr,
             this->offset_of_OrderSize);
     }
 
     inline void receive(Stream & stream) {
         {
-            const unsigned expected =
-                10;  // OrderSize(2) + FieldsPresentFlags(4) + WindowId(4)
+            const unsigned expected = 10;  // OrderSize(2) + FieldsPresentFlags(4) + WindowId(4)
 
             if (!stream.in_check_rem(expected)) {
                 LOG(LOG_ERR,
@@ -499,8 +494,7 @@ protected:
     }
 
     inline static size_t size() {
-    	//TODO: it was 6 before @speidy change
-        return 10;   // OrderSize(2) + FieldsPresentFlags(4) + WindowId(4)
+        return 11;   // Hdr(1) + OrderSize(2) + FieldsPresentFlags(4) + WindowId(4)
     }
 
     inline size_t str(char * buffer, size_t size) const {
@@ -1817,30 +1811,25 @@ public:
 class DesktopInformationCommonHeader {
     mutable uint16_t OrderSize           = 0;
             uint32_t FieldsPresentFlags_ = 0;
-//            uint32_t WindowId            = 0;
 
     mutable uint32_t   offset_of_OrderSize = 0;
+    mutable uint32_t   offset_of_Hdr = 0;
     mutable Stream   * output_stream       = nullptr;
 
 protected:
-    //inline void AddFieldsPresentFlags(uint32_t FieldsPresentFlagsToAdd) {
-    //    this->FieldsPresentFlags_ |= FieldsPresentFlagsToAdd;
-    //}
-
-    //inline void RemoveFieldsPresentFlags(uint32_t FieldsPresentFlagsToRemove) {
-    //    this->FieldsPresentFlags_ &= ~FieldsPresentFlagsToRemove;
-    //}
 
     inline void emit_begin(Stream & stream) const {
         REDASSERT(this->output_stream == nullptr);
 
         this->output_stream = &stream;
 
+        this->offset_of_Hdr = stream.get_offset();
+        stream.out_uint8(SECONDARY | (AltsecDrawingOrderHeader::Window << 2)); // Hdr(1)
+
         this->offset_of_OrderSize = stream.get_offset();
         stream.out_skip_bytes(2); // OrderSize(2)
 
         stream.out_uint32_le(this->FieldsPresentFlags_);
-//        stream.out_uint32_le(this->WindowId);
 
         stream.mark_end();
     }
@@ -1849,14 +1838,13 @@ protected:
         REDASSERT(this->output_stream != nullptr);
 
         this->output_stream->set_out_uint16_le(
-            this->output_stream->get_offset() - this->offset_of_OrderSize,
+            this->output_stream->get_offset() - this->offset_of_Hdr,
             this->offset_of_OrderSize);
     }
 
     inline void receive(Stream & stream) {
         {
-            const unsigned expected =
-                6;  // OrderSize(2) + FieldsPresentFlags(4)
+            const unsigned expected = 6;  // OrderSize(2) + FieldsPresentFlags(4)
 
             if (!stream.in_check_rem(expected)) {
                 LOG(LOG_ERR,
@@ -1869,11 +1857,10 @@ protected:
 
         this->OrderSize           = stream.in_uint16_le();
         this->FieldsPresentFlags_ = stream.in_uint32_le();
-//        this->WindowId            = stream.in_uint32_le();
     }
 
     inline static size_t size() {
-        return 6;   // OrderSize(2) + FieldsPresentFlags(4)
+        return 7;   // Hdr(1) + OrderSize(2) + FieldsPresentFlags(4)
     }
 
     inline size_t str(char * buffer, size_t size) const {
